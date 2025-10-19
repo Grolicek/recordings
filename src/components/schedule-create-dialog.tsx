@@ -89,7 +89,7 @@ export function ScheduleCreateDialog({onSuccess}: ScheduleCreateDialogProps) {
                 <DialogHeader>
                     <DialogTitle>create new schedule</DialogTitle>
                     <DialogDescription>
-                        schedule a new recording to start at a specific time
+                        Schedule a new recording to start at a specific time.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -149,7 +149,7 @@ export function ScheduleCreateDialog({onSuccess}: ScheduleCreateDialogProps) {
                             required
                             value={formData.startTime}
                             onChange={(e) => setFormData({...formData, startTime: e.target.value})}
-                            className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
+                            className="w-full px-3 py-2 border rounded-md bg-background text-foreground [color-scheme:light] dark:[color-scheme:dark]"
                         />
                     </div>
 

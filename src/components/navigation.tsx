@@ -16,7 +16,7 @@ export function Navigation({currentView, onViewChange, showSchedules}: Navigatio
                 size="sm"
                 onClick={() => onViewChange('recordings')}
             >
-                recordings
+                playlists
             </Button>
             {showSchedules && (
                 <Button

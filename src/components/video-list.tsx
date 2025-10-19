@@ -158,7 +158,7 @@ export default function VideoList() {
         }
         if (playlists.length === 0) {
             return (
-                <div className="p-6 text-muted-foreground">no recordings found.</div>
+                <div className="p-6 text-muted-foreground">No recordings found.</div>
             );
         }
 
