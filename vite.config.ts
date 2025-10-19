@@ -10,4 +10,15 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+    build: {
+        // reduce memory usage during build
+        minify: 'esbuild',
+        rollupOptions: {
+            output: {
+                manualChunks: undefined,
+            },
+        },
+        // disable source maps to save memory
+        sourcemap: false,
+    },
 });
