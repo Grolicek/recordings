@@ -13,9 +13,11 @@ export default function App() {
     const [showSchedules, setShowSchedules] = useState(false);
 
     useEffect(() => {
-        // try to fetch user info on mount
-        fetchUserInfo().then(() => {
-            setShowSchedules(isAdmin());
+        // try to fetch user info on mount (but don't trigger auth dialog)
+        fetchUserInfo().then((info) => {
+            if (info) {
+                setShowSchedules(info.isAdmin);
+            }
         });
     }, []);
 

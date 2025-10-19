@@ -94,7 +94,7 @@ export function ScheduleCreateDialog({onSuccess}: ScheduleCreateDialogProps) {
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <label htmlFor="streamUrl" className="text-sm font-medium">
+                        <label htmlFor="streamUrl" className="text-sm font-medium text-foreground">
                             stream url
                         </label>
                         <input
@@ -103,13 +103,13 @@ export function ScheduleCreateDialog({onSuccess}: ScheduleCreateDialogProps) {
                             required
                             value={formData.streamUrl}
                             onChange={(e) => setFormData({...formData, streamUrl: e.target.value})}
-                            className="w-full px-3 py-2 border rounded-md bg-background"
+                            className="w-full px-3 py-2 border rounded-md bg-background text-foreground placeholder:text-muted-foreground"
                             placeholder="https://example.com/stream.m3u8"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="playlistName" className="text-sm font-medium">
+                        <label htmlFor="playlistName" className="text-sm font-medium text-foreground">
                             playlist name
                         </label>
                         <input
@@ -118,13 +118,13 @@ export function ScheduleCreateDialog({onSuccess}: ScheduleCreateDialogProps) {
                             required
                             value={formData.playlistName}
                             onChange={(e) => setFormData({...formData, playlistName: e.target.value})}
-                            className="w-full px-3 py-2 border rounded-md bg-background"
+                            className="w-full px-3 py-2 border rounded-md bg-background text-foreground placeholder:text-muted-foreground"
                             placeholder="my-recording"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="lengthSeconds" className="text-sm font-medium">
+                        <label htmlFor="lengthSeconds" className="text-sm font-medium text-foreground">
                             length (seconds)
                         </label>
                         <input
@@ -134,13 +134,13 @@ export function ScheduleCreateDialog({onSuccess}: ScheduleCreateDialogProps) {
                             min="1"
                             value={formData.lengthSeconds}
                             onChange={(e) => setFormData({...formData, lengthSeconds: e.target.value})}
-                            className="w-full px-3 py-2 border rounded-md bg-background"
+                            className="w-full px-3 py-2 border rounded-md bg-background text-foreground placeholder:text-muted-foreground"
                             placeholder="3600"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="startTime" className="text-sm font-medium">
+                        <label htmlFor="startTime" className="text-sm font-medium text-foreground">
                             start time
                         </label>
                         <input
@@ -149,7 +149,7 @@ export function ScheduleCreateDialog({onSuccess}: ScheduleCreateDialogProps) {
                             required
                             value={formData.startTime}
                             onChange={(e) => setFormData({...formData, startTime: e.target.value})}
-                            className="w-full px-3 py-2 border rounded-md bg-background"
+                            className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
                         />
                     </div>
 

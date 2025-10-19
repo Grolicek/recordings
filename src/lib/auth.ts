@@ -7,43 +7,19 @@ export interface UserInfo {
 
 // trigger browser's built-in authentication dialog
 export function triggerBrowserAuth(): Promise<void> {
-    return new Promise((resolve, reject) => {
-        // create a hidden iframe to trigger auth without full page redirect
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = PLAYLISTS_PATH;
+    return new Promise((resolve) => {
+        // redirect to playlists path to trigger auth dialog
+        const returnUrl = window.location.href;
 
-        const cleanup = () => {
-            if (document.contains(iframe)) {
-                document.body.removeChild(iframe);
-            }
-        };
+        // store return URL in session storage
+        sessionStorage.setItem('auth-return-url', returnUrl);
 
-        iframe.onload = async () => {
-            cleanup();
-            // mark as authenticated
-            setAuthenticatedState(true);
-            // fetch user info
-            await fetchUserInfo();
-            // trigger a custom event to notify components to refresh
-            window.dispatchEvent(new CustomEvent('auth-success'));
-            resolve();
-        };
+        // redirect to trigger auth
+        window.location.href = PLAYLISTS_PATH;
 
-        iframe.onerror = () => {
-            cleanup();
-            reject(new Error('authentication failed'));
-        };
-
-        document.body.appendChild(iframe);
-
-        // fallback: redirect to the URL after 3 seconds if iframe doesn't work
-        setTimeout(() => {
-            if (document.contains(iframe)) {
-                cleanup();
-                window.location.href = PLAYLISTS_PATH;
-            }
-        }, 3000);
+        // mark as authenticated after redirect
+        setAuthenticatedState(true);
+        resolve();
     });
 }
 
