@@ -39,16 +39,16 @@ function parsePlaylistFolders(html: string): string[] {
 async function validatePlaylistFolder(folderPath: string): Promise<string | null> {
     try {
         const res = await tryAuthenticatedFetch(folderPath);
-        
+
         // silently skip folders that require authentication
         if (res.status === 401) {
             return null;
         }
-        
+
         if (!res.ok) {
             return null;
         }
-        
+
         const html = await res.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
         const links = Array.from(doc.querySelectorAll('a'));

@@ -4,7 +4,7 @@ import {Button} from '@/components/ui/button';
 import {authenticatedFetch} from '@/lib/auth';
 import {API_BASE_URL} from '@/config';
 import {ScheduleCreateDialog} from './schedule-create-dialog';
-import {Trash2, Clock, Calendar} from 'lucide-react';
+import {Calendar, Clock, Trash2} from 'lucide-react';
 
 type RecordingStatus = 'pending' | 'recording' | 'transcoding' | 'completed' | 'failed';
 
@@ -42,7 +42,7 @@ function formatDuration(seconds: number): string {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     if (hours > 0) {
         return `${hours}h ${minutes}m ${secs}s`;
     }
@@ -61,7 +61,7 @@ export default function ScheduleList() {
         try {
             setLoading(true);
             const response = await authenticatedFetch(`${API_BASE_URL}/scheduled-recordings`);
-            
+
             if (!response.ok) {
                 throw new Error('failed to fetch scheduled recordings');
             }
@@ -120,7 +120,7 @@ export default function ScheduleList() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-semibold">scheduled recordings</h2>
-                <ScheduleCreateDialog onSuccess={fetchRecordings} />
+                <ScheduleCreateDialog onSuccess={fetchRecordings}/>
             </div>
 
             {recordings.length === 0 ? (
@@ -145,14 +145,14 @@ export default function ScheduleList() {
                             </CardHeader>
                             <CardContent className="flex-1 space-y-2 text-sm">
                                 <div className="flex items-start gap-2">
-                                    <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                                    <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0"/>
                                     <div className="flex-1 min-w-0">
                                         <div className="text-muted-foreground text-xs">start time</div>
                                         <div className="truncate">{formatDateTime(recording.startTime)}</div>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <Clock className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                                    <Clock className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0"/>
                                     <div className="flex-1 min-w-0">
                                         <div className="text-muted-foreground text-xs">duration</div>
                                         <div>{formatDuration(recording.lengthSeconds)}</div>
@@ -180,7 +180,7 @@ export default function ScheduleList() {
                                         onClick={() => handleDelete(recording.id)}
                                         className="w-full"
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        <Trash2 className="h-4 w-4"/>
                                         cancel
                                     </Button>
                                 )}

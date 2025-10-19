@@ -60,7 +60,7 @@ export default function App() {
                 </div>
             </header>
             <main className="mx-auto max-w-6xl px-4 py-6">
-                {currentView === 'recordings' ? <VideoList /> : <ScheduleList />}
+                {currentView === 'recordings' ? <VideoList/> : <ScheduleList/>}
             </main>
             <footer className="mx-auto max-w-6xl px-4 py-6 text-sm text-muted-foreground">
                 recordings.muni.oga.sk · created by groli

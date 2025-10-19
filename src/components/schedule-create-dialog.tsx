@@ -1,12 +1,6 @@
 import {useState} from 'react';
 import {Button} from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {authenticatedFetch} from '@/lib/auth';
 import {API_BASE_URL} from '@/config';
 import {Plus} from 'lucide-react';
@@ -88,7 +82,7 @@ export function ScheduleCreateDialog({onSuccess}: ScheduleCreateDialogProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <Button onClick={() => setOpen(true)}>
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4"/>
                 new schedule
             </Button>
             <DialogContent className="sm:max-w-[500px]">

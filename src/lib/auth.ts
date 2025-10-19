@@ -1,8 +1,8 @@
-import {PLAYLISTS_PATH, API_BASE_URL} from '@/config';
+import {API_BASE_URL, PLAYLISTS_PATH} from '@/config';
 
 export interface UserInfo {
-  username: string;
-  isAdmin: boolean;
+    username: string;
+    isAdmin: boolean;
 }
 
 // trigger browser's built-in authentication dialog
