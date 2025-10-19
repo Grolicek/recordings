@@ -16,6 +16,8 @@ export function triggerBrowserAuth(): Promise<void> {
 
         iframe.onload = () => {
             cleanup();
+            // mark as authenticated
+            setAuthenticatedState(true);
             // trigger a custom event to notify components to refresh
             window.dispatchEvent(new CustomEvent('auth-success'));
             resolve();
@@ -56,15 +58,27 @@ export async function authenticatedFetch(
     return response;
 }
 
-// try to fetch with authentication, fallback to public access
+// track if user has authenticated this session
+let isAuthenticated = false;
+
+// set authentication state (called after successful login)
+export function setAuthenticatedState(authenticated: boolean) {
+    isAuthenticated = authenticated;
+}
+
+// smart fetch that uses credentials only after user has authenticated
 export async function tryAuthenticatedFetch(
     url: string,
     options?: RequestInit,
 ): Promise<Response> {
-    try {
-        return await authenticatedFetch(url, options, true);
-    } catch (error) {
-        // if auth fails, try without credentials for public access
+    if (isAuthenticated) {
+        // user has logged in, use credentials
+        return await fetch(url, {
+            ...options,
+            credentials: 'include',
+        });
+    } else {
+        // no login yet, try public access only
         return await fetch(url, options);
     }
 }
