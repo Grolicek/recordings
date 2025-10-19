@@ -39,12 +39,12 @@ export function LoginButton() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>login required</DialogTitle>
+                    <DialogTitle>login</DialogTitle>
                     <DialogDescription>
-                        some recordings require authentication to view. click below to log in.
+                        Some recordings may require authentication to view, click below to log in.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-col gap-4 py-4">
+                <div className="flex flex-col gap-4">
                     <Button onClick={handleLogin} disabled={isLoading}>
                         {isLoading ? (
                             <LoaderCircle className="animate-spin"/>
