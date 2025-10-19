@@ -3,7 +3,7 @@ import VideoPlayer from './video-player';
 import {Card, CardContent, CardFooter, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {PLAYLISTS_PATH} from '@/config';
-import {authenticatedFetch} from '@/lib/auth';
+import {tryAuthenticatedFetch} from '@/lib/auth';
 import {ArrowLeft} from 'lucide-react';
 
 type Playlist = {
@@ -38,7 +38,7 @@ function parsePlaylistFolders(html: string): string[] {
 // check if playlist folder has both .m3u8 and init.mp4
 async function validatePlaylistFolder(folderPath: string): Promise<string | null> {
     try {
-        const res = await authenticatedFetch(folderPath);
+        const res = await tryAuthenticatedFetch(folderPath);
         const html = await res.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
         const links = Array.from(doc.querySelectorAll('a'));
@@ -71,13 +71,14 @@ export default function VideoList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selected, setSelected] = useState<Playlist | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         let cancelled = false;
         setLoading(true);
 
         // first, fetch the list of playlist folders
-        authenticatedFetch(PLAYLISTS_PATH)
+        tryAuthenticatedFetch(PLAYLISTS_PATH)
             .then((res) => res.text())
             .then(async (html) => {
                 if (cancelled) return;
@@ -119,6 +120,16 @@ export default function VideoList() {
         return () => {
             cancelled = true;
         };
+    }, [refreshKey]);
+
+    // listen for auth success events to refresh the list
+    useEffect(() => {
+        const handleAuthSuccess = () => {
+            setRefreshKey(prev => prev + 1);
+        };
+
+        window.addEventListener('auth-success', handleAuthSuccess);
+        return () => window.removeEventListener('auth-success', handleAuthSuccess);
     }, []);
 
     const content = useMemo(() => {

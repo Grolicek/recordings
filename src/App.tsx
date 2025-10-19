@@ -1,5 +1,6 @@
 import VideoList from './components/video-list';
 import {ThemeToggle} from '@/components/theme-toggle';
+import {LoginButton} from '@/components/login-button';
 
 export default function App() {
     return (
@@ -9,7 +10,10 @@ export default function App() {
                     <h1 className="text-xl font-semibold tracking-tight">
                         recordings
                     </h1>
-                    <ThemeToggle/>
+                    <div className="flex items-center gap-2">
+                        <LoginButton/>
+                        <ThemeToggle/>
+                    </div>
                 </div>
             </header>
             <main className="mx-auto max-w-6xl px-4 py-6">
