@@ -13,14 +13,6 @@ export default function App() {
     const [currentView, setCurrentView] = useState<View>('recordings');
     const [showSchedules, setShowSchedules] = useState(false);
 
-    useEffect(() => {
-        // try to fetch user info on mount (but don't trigger auth dialog)
-        fetchUserInfo().then((info) => {
-            if (info) {
-                setShowSchedules(info.isAdmin);
-            }
-        });
-    }, []);
 
     // listen for auth success events to refresh user info
     useEffect(() => {

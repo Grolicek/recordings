@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
-import {authenticatedFetch} from '@/lib/auth';
+import {authenticatedFetch, getAuthState} from '@/lib/auth';
 import {API_BASE_URL} from '@/config';
 import {ScheduleCreateDialog} from './schedule-create-dialog';
 import {Calendar, Clock, Trash2} from 'lucide-react';
@@ -77,7 +77,20 @@ export default function ScheduleList() {
     };
 
     useEffect(() => {
-        fetchRecordings();
+        // if user is already authenticated, fetch schedules immediately
+        if (getAuthState()) {
+            fetchRecordings();
+        }
+
+        const handleAuthSuccess = () => {
+            fetchRecordings();
+        };
+
+        window.addEventListener('auth-success', handleAuthSuccess);
+
+        return () => {
+            window.removeEventListener('auth-success', handleAuthSuccess);
+        };
     }, []);
 
     const handleDelete = async (id: string) => {
