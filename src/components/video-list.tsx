@@ -38,7 +38,17 @@ function parsePlaylistFolders(html: string): string[] {
 // check if playlist folder has both .m3u8 and init.mp4
 async function validatePlaylistFolder(folderPath: string): Promise<string | null> {
     try {
-        const res = await tryAuthenticatedFetch(folderPath);
+        const res = await fetch(folderPath, { credentials: 'include' });
+        
+        // silently skip folders that require authentication
+        if (res.status === 401) {
+            return null;
+        }
+        
+        if (!res.ok) {
+            return null;
+        }
+        
         const html = await res.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
         const links = Array.from(doc.querySelectorAll('a'));
@@ -60,8 +70,9 @@ async function validatePlaylistFolder(folderPath: string): Promise<string | null
         if (m3u8File && hasInit) {
             return m3u8File;
         }
-    } catch (e) {
-        console.error(`failed to fetch folder ${folderPath}:`, e);
+    } catch (e: any) {
+        // silently ignore errors (including auth failures)
+        console.debug(`skipping folder ${folderPath}:`, e.message);
     }
     return null;
 }
@@ -157,7 +168,6 @@ export default function VideoList() {
                     <div className="flex items-center gap-3">
                         <Button
                             variant="outline"
-                            className="cursor-pointer"
                             onClick={() => setSelected(null)}
                         >
                             <ArrowLeft/> back to list

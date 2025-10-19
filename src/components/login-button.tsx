@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {LogIn} from 'lucide-react';
+import {LoaderCircle, LogIn} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {
     Dialog,
@@ -32,7 +32,7 @@ export function LoginButton() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" size="icon" className="cursor-pointer">
+                <Button variant="outline" size="icon">
                     <LogIn className="h-[1.2rem] w-[1.2rem]"/>
                     <span className="sr-only">login</span>
                 </Button>
@@ -45,8 +45,13 @@ export function LoginButton() {
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-4 py-4">
-                    <Button onClick={handleLogin} disabled={isLoading} className="cursor-pointer">
-                        {isLoading ? 'logging in...' : 'login'}
+                    <Button onClick={handleLogin} disabled={isLoading}>
+                        {isLoading ? (
+                            <LoaderCircle className="animate-spin"/>
+                        ) : (
+                            <LogIn/>
+                        )}
+                        login
                     </Button>
                 </div>
             </DialogContent>
