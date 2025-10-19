@@ -38,7 +38,7 @@ function parsePlaylistFolders(html: string): string[] {
 // check if playlist folder has both .m3u8 and init.mp4
 async function validatePlaylistFolder(folderPath: string): Promise<string | null> {
     try {
-        const res = await fetch(folderPath, { credentials: 'include' });
+        const res = await tryAuthenticatedFetch(folderPath);
         
         // silently skip folders that require authentication
         if (res.status === 401) {
