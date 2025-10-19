@@ -133,14 +133,18 @@ export default function VideoList() {
         };
     }, [refreshKey]);
 
-    // listen for auth success events to refresh the list
+    // listen for auth events to refresh the list
     useEffect(() => {
-        const handleAuthSuccess = () => {
+        const handleAuthChange = () => {
             setRefreshKey(prev => prev + 1);
         };
 
-        window.addEventListener('auth-success', handleAuthSuccess);
-        return () => window.removeEventListener('auth-success', handleAuthSuccess);
+        window.addEventListener('auth-success', handleAuthChange);
+        window.addEventListener('auth-logout', handleAuthChange);
+        return () => {
+            window.removeEventListener('auth-success', handleAuthChange);
+            window.removeEventListener('auth-logout', handleAuthChange);
+        };
     }, []);
 
     const content = useMemo(() => {

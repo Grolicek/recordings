@@ -5,7 +5,8 @@ export interface UserInfo {
     isAdmin: boolean;
 }
 
-const AUTH_SESSION_KEY = 'recordings-auth';
+// track if user wants to see authenticated content
+let showAuthContent = false;
 
 // trigger browser's built-in authentication dialog
 export async function triggerBrowserAuth(): Promise<void> {
@@ -17,7 +18,7 @@ export async function triggerBrowserAuth(): Promise<void> {
 
         if (response.ok) {
             // authentication successful
-            setAuthenticatedState(true);
+            showAuthContent = true;
 
             // fetch and cache user info
             await fetchUserInfo();
@@ -30,7 +31,7 @@ export async function triggerBrowserAuth(): Promise<void> {
             throw new Error('authentication error');
         }
     } catch (error) {
-        setAuthenticatedState(false);
+        showAuthContent = false;
         throw error;
     }
 }
@@ -53,27 +54,18 @@ export async function authenticatedFetch(
     return response;
 }
 
-// track if user has authenticated this session
+// track user info
 let userInfo: UserInfo | null = null;
 
-// initialize auth state from session storage
+// check if user wants to see authenticated content
 export function getAuthState(): boolean {
-    return sessionStorage.getItem(AUTH_SESSION_KEY) === 'true';
+    return showAuthContent;
 }
 
-// set authentication state (called after successful login)
-export function setAuthenticatedState(authenticated: boolean) {
-    if (authenticated) {
-        sessionStorage.setItem(AUTH_SESSION_KEY, 'true');
-    } else {
-        sessionStorage.removeItem(AUTH_SESSION_KEY);
-        userInfo = null;
-    }
-}
-
-// logout function
+// logout function - hides authenticated content
 export function logout() {
-    setAuthenticatedState(false);
+    showAuthContent = false;
+    userInfo = null;
 
     // notify components of logout
     window.dispatchEvent(new Event('auth-logout'));
@@ -85,12 +77,14 @@ export async function fetchUserInfo(): Promise<UserInfo | null> {
         const response = await authenticatedFetch(`${API_BASE_URL}/user`);
         if (!response.ok) {
             if (response.status === 401) {
-                setAuthenticatedState(false);
+                showAuthContent = false;
+                userInfo = null;
             }
             return null;
         }
         const data = await response.json();
         userInfo = {username: data.username, isAdmin: data.isAdmin};
+        showAuthContent = true;
         return userInfo;
     } catch (error) {
         console.error('failed to fetch user info:', error);
@@ -108,19 +102,22 @@ export function isAdmin(): boolean {
     return userInfo?.isAdmin || false;
 }
 
-// smart fetch that uses credentials only after user has authenticated
+// smart fetch that tries public access first, falls back to authenticated
 export async function tryAuthenticatedFetch(
     url: string,
     options?: RequestInit,
 ): Promise<Response> {
-    if (getAuthState()) {
-        // user has logged in, use credentials
-        return await fetch(url, {
-            ...options,
-            credentials: 'include',
-        });
-    } else {
-        // no login yet, try public access only
-        return await fetch(url, options);
+    // always try public access first
+    const publicResponse = await fetch(url, options);
+
+    // if public access works or user hasn't opted in to auth, use public
+    if (publicResponse.ok || !getAuthState()) {
+        return publicResponse;
     }
+
+    // public failed and user wants auth content, try with credentials
+    return await fetch(url, {
+        ...options,
+        credentials: 'include',
+    });
 }

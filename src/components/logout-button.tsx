@@ -41,8 +41,8 @@ export function LogoutButton() {
                 <DialogHeader>
                     <DialogTitle>logout</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to log out? You will need to authenticate again to access protected
-                        content.
+                        This will hide authenticated content. Note: browser may still cache credentials until you close
+                        it.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-4">
