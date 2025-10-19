@@ -18,12 +18,13 @@ export function LoginButton() {
     const handleLogin = async () => {
         setIsLoading(true);
         try {
-            // close modal first
-            setOpen(false);
-            // trigger authentication
+            // trigger authentication (will show browser's HTTP Basic Auth dialog)
             await triggerBrowserAuth();
+            // close modal after successful authentication
+            setOpen(false);
         } catch (error) {
             console.error('login failed:', error);
+            // keep dialog open on error so user can try again
         } finally {
             setIsLoading(false);
         }

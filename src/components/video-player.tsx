@@ -1,6 +1,7 @@
 import {useEffect, useRef} from 'react';
 import Hls from 'hls.js';
 import {Card} from '@/components/ui/card';
+import {getAuthState} from '@/lib/auth';
 
 interface Props {
     src: string;
@@ -14,20 +15,26 @@ export default function VideoPlayer({src, title}: Props) {
         const video = videoRef.current!;
         let hls: Hls | null = null;
 
+        const isAuthenticated = getAuthState();
+
         if (Hls.isSupported()) {
             hls = new Hls({
                 maxBufferLength: 60,
                 startPosition: -1,
                 xhrSetup: (xhr) => {
-                    // include credentials for authenticated requests
-                    xhr.withCredentials = true;
+                    // include credentials only if user has authenticated
+                    if (isAuthenticated) {
+                        xhr.withCredentials = true;
+                    }
                 },
             });
             hls.loadSource(src);
             hls.attachMedia(video);
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // for safari native HLS - credentials are sent automatically
-            video.crossOrigin = 'use-credentials';
+            // for safari native HLS - credentials are sent automatically if authenticated
+            if (isAuthenticated) {
+                video.crossOrigin = 'use-credentials';
+            }
             video.src = src;
         } else {
             console.error('hls not supported in this browser');

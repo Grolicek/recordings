@@ -4,7 +4,8 @@ import ScheduleList from './components/schedule-list';
 import {Navigation} from '@/components/navigation';
 import {ThemeToggle} from '@/components/theme-toggle';
 import {LoginButton} from '@/components/login-button';
-import {fetchUserInfo, isAdmin} from '@/lib/auth';
+import {LogoutButton} from '@/components/logout-button';
+import {fetchUserInfo, getUserInfo, isAdmin} from '@/lib/auth';
 
 type View = 'recordings' | 'schedules';
 
@@ -29,9 +30,22 @@ export default function App() {
             });
         };
 
+        const handleAuthLogout = () => {
+            // clear schedules visibility
+            setShowSchedules(false);
+            // switch to recordings view if on schedules
+            if (currentView === 'schedules') {
+                setCurrentView('recordings');
+            }
+        };
+
         window.addEventListener('auth-success', handleAuthSuccess);
-        return () => window.removeEventListener('auth-success', handleAuthSuccess);
-    }, []);
+        window.addEventListener('auth-logout', handleAuthLogout);
+        return () => {
+            window.removeEventListener('auth-success', handleAuthSuccess);
+            window.removeEventListener('auth-logout', handleAuthLogout);
+        };
+    }, [currentView]);
 
     const handleViewChange = (view: View) => {
         // only allow schedules view if user is admin
@@ -56,7 +70,7 @@ export default function App() {
                         />
                     </div>
                     <div className="flex items-center gap-2">
-                        <LoginButton/>
+                        {getUserInfo() ? <LogoutButton/> : <LoginButton/>}
                         <ThemeToggle/>
                     </div>
                 </div>

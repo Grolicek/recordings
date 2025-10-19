@@ -1,26 +1,38 @@
-import {API_BASE_URL, PLAYLISTS_PATH} from '@/config';
+import {API_BASE_URL} from '@/config';
 
 export interface UserInfo {
     username: string;
     isAdmin: boolean;
 }
 
+const AUTH_SESSION_KEY = 'recordings-auth';
+
 // trigger browser's built-in authentication dialog
-export function triggerBrowserAuth(): Promise<void> {
-    return new Promise((resolve) => {
-        // redirect to playlists path to trigger auth dialog
-        const returnUrl = window.location.href;
+export async function triggerBrowserAuth(): Promise<void> {
+    try {
+        // fetch user endpoint with credentials to trigger browser's HTTP Basic Auth dialog
+        const response = await fetch(`${API_BASE_URL}/user`, {
+            credentials: 'include',
+        });
 
-        // store return URL in session storage
-        sessionStorage.setItem('auth-return-url', returnUrl);
+        if (response.ok) {
+            // authentication successful
+            setAuthenticatedState(true);
 
-        // redirect to trigger auth
-        window.location.href = PLAYLISTS_PATH;
+            // fetch and cache user info
+            await fetchUserInfo();
 
-        // mark as authenticated after redirect
-        setAuthenticatedState(true);
-        resolve();
-    });
+            // notify components of successful authentication
+            window.dispatchEvent(new Event('auth-success'));
+        } else if (response.status === 401) {
+            throw new Error('authentication failed');
+        } else {
+            throw new Error('authentication error');
+        }
+    } catch (error) {
+        setAuthenticatedState(false);
+        throw error;
+    }
 }
 
 // fetch with authentication handling
@@ -42,15 +54,29 @@ export async function authenticatedFetch(
 }
 
 // track if user has authenticated this session
-let isAuthenticated = false;
 let userInfo: UserInfo | null = null;
+
+// initialize auth state from session storage
+export function getAuthState(): boolean {
+    return sessionStorage.getItem(AUTH_SESSION_KEY) === 'true';
+}
 
 // set authentication state (called after successful login)
 export function setAuthenticatedState(authenticated: boolean) {
-    isAuthenticated = authenticated;
-    if (!authenticated) {
+    if (authenticated) {
+        sessionStorage.setItem(AUTH_SESSION_KEY, 'true');
+    } else {
+        sessionStorage.removeItem(AUTH_SESSION_KEY);
         userInfo = null;
     }
+}
+
+// logout function
+export function logout() {
+    setAuthenticatedState(false);
+
+    // notify components of logout
+    window.dispatchEvent(new Event('auth-logout'));
 }
 
 // fetch user info from API
@@ -87,7 +113,7 @@ export async function tryAuthenticatedFetch(
     url: string,
     options?: RequestInit,
 ): Promise<Response> {
-    if (isAuthenticated) {
+    if (getAuthState()) {
         // user has logged in, use credentials
         return await fetch(url, {
             ...options,
