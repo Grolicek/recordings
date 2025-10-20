@@ -1,7 +1,6 @@
 import {useEffect, useRef} from 'react';
 import Hls from 'hls.js';
 import {Card} from '@/components/ui/card';
-import {getAuthState} from '@/lib/auth';
 
 interface Props {
     src: string;
@@ -15,22 +14,15 @@ export default function VideoPlayer({src, title}: Props) {
         const video = videoRef.current!;
         let hls: Hls | null = null;
 
-        const isAuthenticated = getAuthState();
-
         if (Hls.isSupported()) {
             hls = new Hls({
                 maxBufferLength: 60,
                 startPosition: -1,
-                xhrSetup: (xhr) => {
-                    // browser automatically includes credentials for same-origin requests
-                    // when using Basic Auth, so we just need to enable credentials
-                    xhr.withCredentials = true;
-                },
             });
             hls.loadSource(src);
             hls.attachMedia(video);
 
-            hls.on(Hls.Events.ERROR, (event, data) => {
+            hls.on(Hls.Events.ERROR, (_event, data) => {
                 if (data.fatal) {
                     console.error('hls fatal error:', data);
                     if (data.response?.code === 401 || data.response?.code === 403) {
