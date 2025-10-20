@@ -2,7 +2,7 @@ import {Request, Response, Router} from 'express';
 import {requireAdmin} from '../middleware/auth-middleware';
 import * as fs from 'fs/promises';
 import {SERVER_CONFIG} from '../config';
-import * as apacheMd5 from 'apache-md5';
+import apacheMd5 from 'apache-md5';
 
 const router = Router();
 
