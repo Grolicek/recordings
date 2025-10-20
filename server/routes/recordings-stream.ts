@@ -95,8 +95,8 @@ router.get('/:foldername/playlist.m3u8', async (req: Request, res: Response) => 
     }
 });
 
-// GET /api/stream/:foldername/segments/:filename - serve m4s segment files
-router.get('/:foldername/segments/:filename', async (req: Request, res: Response) => {
+// GET /api/stream/:foldername/:filename - serve m4s segment files
+router.get('/:foldername/:filename', async (req: Request, res: Response) => {
     try {
         const {foldername, filename} = req.params;
         const user = (req as any).user as AuthUser | undefined;
