@@ -1,8 +1,16 @@
+import type {NextFunction, Request, Response} from 'express';
 import express from 'express';
-import type {Request, Response, NextFunction} from 'express';
 import {SERVER_CONFIG} from './config';
-import {authMiddleware} from './middleware/auth-middleware';
+import {optionalAuth, requireAdmin} from './middleware/auth-middleware';
+import {closeDatabase, initDatabase} from './db/database';
 import recordingsRouter from './routes/recordings';
+import recordingsListRouter from './routes/recordings-list';
+import recordingsStreamRouter from './routes/recordings-stream';
+import adminUsersRouter from './routes/admin-users';
+import adminRecordingsRouter from './routes/admin-recordings';
+
+// initialize database
+initDatabase();
 
 const app = express();
 
@@ -22,11 +30,19 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({status: 'ok', timestamp: new Date().toISOString()});
 });
 
-// apply authentication middleware to all /api routes except health check
-app.use('/api', authMiddleware);
+// apply optional auth middleware to stream and list routes
+app.use('/api/stream', optionalAuth);
+app.use('/api/recordings-list', recordingsListRouter);
 
-// register routes
-app.use('/api', recordingsRouter);
+// register streaming routes
+app.use('/api/stream', recordingsStreamRouter);
+
+// register admin routes (require admin auth)
+app.use('/api/admin/users', adminUsersRouter);
+app.use('/api/admin/recordings', adminRecordingsRouter);
+
+// register scheduling routes (require admin auth)
+app.use('/api', requireAdmin, recordingsRouter);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -49,10 +65,12 @@ app.listen(port, () => {
 // graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM signal received: closing HTTP server');
+    closeDatabase();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('SIGINT signal received: closing HTTP server');
+    closeDatabase();
   process.exit(0);
 });

@@ -3,9 +3,9 @@ import * as fs from 'fs';
 import * as crypto from 'crypto';
 import {SERVER_CONFIG} from '../config';
 
-interface AuthUser {
+export interface AuthUser {
     username: string;
-    groups: string[];
+    role: 'admin' | 'user';
 }
 
 // parse htpasswd file and verify credentials
@@ -23,8 +23,7 @@ function verifyHtpasswd(username: string, password: string): boolean {
                 }
                 // support bcrypt format
                 if (hash.startsWith('$2y$') || hash.startsWith('$2a$') || hash.startsWith('$2b$')) {
-                    // note: for production, use bcrypt library
-                    console.warn('bcrypt format detected but not fully supported, falling back to comparison');
+                    console.warn('bcrypt format detected but not fully supported');
                     return false;
                 }
             }
@@ -112,53 +111,86 @@ function to64(buffer: Buffer): string {
     return result;
 }
 
-// get user groups from groups file
-function getUserGroups(username: string): string[] {
+// get user role from groups file
+function getUserRole(username: string): 'admin' | 'user' {
     try {
         const groupsContent = fs.readFileSync(SERVER_CONFIG.groupsPath, 'utf-8');
         const lines = groupsContent.split('\n');
 
-        const groups: string[] = [];
         for (const line of lines) {
-            const [groupName, members] = line.split(':').map(s => s.trim());
-            if (members && members.split(',').map(m => m.trim()).includes(username)) {
-                groups.push(groupName);
+            const [groupName, members] = line.split(':').map((s) => s.trim());
+            if (members && members.split(',').map((m) => m.trim()).includes(username)) {
+                if (groupName === SERVER_CONFIG.adminGroup) {
+                    return 'admin';
+                }
             }
         }
-        return groups;
     } catch (error) {
         console.error('failed to read groups file:', error);
-        return [];
     }
+    return 'user';
 }
 
-// authentication middleware
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+// authenticate user from Basic Auth header
+function authenticateUser(req: Request): AuthUser | null {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Basic ')) {
-        res.setHeader('WWW-Authenticate', 'Basic realm="Recordings API"');
-        return res.status(401).json({error: 'authentication required'});
+        return null;
     }
 
+    try {
     const base64Credentials = authHeader.split(' ')[1];
     const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
     const [username, password] = credentials.split(':');
 
     if (!verifyHtpasswd(username, password)) {
-        console.log(`authentication failed for user: ${username}`);
-        return res.status(401).json({error: 'invalid credentials'});
+        return null;
     }
 
-    const groups = getUserGroups(username);
-    if (!groups.includes(SERVER_CONFIG.adminGroup)) {
-        console.log(`authorization failed for user ${username}: not in admin group`);
-        return res.status(403).json({error: 'insufficient permissions'});
+        const role = getUserRole(username);
+        return {username, role};
+    } catch (error) {
+        console.error('error during authentication:', error);
+        return null;
+    }
+}
+
+// middleware: requires any authenticated user
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+    const user = authenticateUser(req);
+
+    if (!user) {
+        res.setHeader('WWW-Authenticate', 'Basic realm="Recordings API"');
+        return res.status(401).json({error: 'authentication required'});
     }
 
-    // attach user info to request
-    (req as any).user = {username, groups} as AuthUser;
-    console.log(`authenticated user: ${username} with groups: ${groups.join(', ')}`);
+    (req as any).user = user;
+    next();
+}
 
+// middleware: requires admin role
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+    const user = authenticateUser(req);
+
+    if (!user) {
+        res.setHeader('WWW-Authenticate', 'Basic realm="Recordings API"');
+        return res.status(401).json({error: 'authentication required'});
+    }
+
+    if (user.role !== 'admin') {
+        return res.status(403).json({error: 'admin access required'});
+    }
+
+    (req as any).user = user;
+    next();
+}
+
+// middleware: attaches user if authenticated, allows anonymous
+export function optionalAuth(req: Request, res: Response, next: NextFunction) {
+    const user = authenticateUser(req);
+    if (user) {
+        (req as any).user = user;
+    }
     next();
 }

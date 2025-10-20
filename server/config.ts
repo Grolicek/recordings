@@ -4,5 +4,6 @@ export const SERVER_CONFIG = {
   groupsPath: '/var/www/auth/muni_oga_sk_groups',
   recordingsDir: '/var/www/data.oga.sk/muni/recordings/playlists',
     schedulesDbPath: '/var/www/data.oga.sk/muni/recordings/schedules.json',
+    databasePath: '/var/www/data.oga.sk/muni/recordings/recordings.db',
   adminGroup: 'admin',
 };

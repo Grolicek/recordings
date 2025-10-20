@@ -1,8 +1,5 @@
-import {Router, Request, Response} from 'express';
+import {Request, Response, Router} from 'express';
 import {recordingScheduler} from '../services/recording-scheduler';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import {SERVER_CONFIG} from '../config';
 
 const router = Router();
 
@@ -14,7 +11,7 @@ router.get('/user', (req: Request, res: Response) => {
       return res.status(401).json({error: 'not authenticated'});
     }
 
-    const isAdmin = user.groups?.includes(SERVER_CONFIG.adminGroup) || false;
+      const isAdmin = user.role === 'admin';
 
     res.json({
       username: user.username,
@@ -132,31 +129,5 @@ router.delete('/scheduled-recordings/:id', (req: Request, res: Response) => {
   }
 });
 
-// GET /api/recordings - list completed recordings from filesystem
-router.get('/recordings', async (req: Request, res: Response) => {
-  try {
-    const files = await fs.readdir(SERVER_CONFIG.recordingsDir);
-    
-    // filter for mp4 files and directories (HLS output)
-    const recordings = await Promise.all(
-      files.map(async (file) => {
-        const filePath = path.join(SERVER_CONFIG.recordingsDir, file);
-        const stats = await fs.stat(filePath);
-        
-        return {
-          name: file,
-          isDirectory: stats.isDirectory(),
-          size: stats.size,
-          modified: stats.mtime,
-        };
-      }),
-    );
-
-    res.json({recordings});
-  } catch (error) {
-    console.error('error listing recordings:', error);
-    res.status(500).json({error: 'failed to list recordings'});
-  }
-});
 
 export default router;

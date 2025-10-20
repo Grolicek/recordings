@@ -22,19 +22,25 @@ export default function VideoPlayer({src, title}: Props) {
                 maxBufferLength: 60,
                 startPosition: -1,
                 xhrSetup: (xhr) => {
-                    // include credentials only if user has authenticated
-                    if (isAuthenticated) {
-                        xhr.withCredentials = true;
-                    }
+                    // browser automatically includes credentials for same-origin requests
+                    // when using Basic Auth, so we just need to enable credentials
+                    xhr.withCredentials = true;
                 },
             });
             hls.loadSource(src);
             hls.attachMedia(video);
+
+            hls.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                    console.error('hls fatal error:', data);
+                    if (data.response?.code === 401 || data.response?.code === 403) {
+                        console.error('authentication required for this recording');
+                    }
+                }
+            });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // for safari native HLS - credentials are sent automatically if authenticated
-            if (isAuthenticated) {
-                video.crossOrigin = 'use-credentials';
-            }
+            // for safari native HLS - enable credentials
+            video.crossOrigin = 'use-credentials';
             video.src = src;
         } else {
             console.error('hls not supported in this browser');
