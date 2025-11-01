@@ -4,6 +4,8 @@ import {RecordingParams, vlcRecordingService} from './vlc-recording-service';
 import {hlsTranscodingService} from './hls-transcoding-service';
 import * as fs from 'fs/promises';
 import {SERVER_CONFIG} from '../config';
+import * as path from 'path';
+import {RecordingModel} from '../db/models/recording';
 
 export interface ScheduledRecording {
   id: string;
@@ -210,6 +212,15 @@ class RecordingScheduler {
             this.saveToDisk();
           console.log(`starting transcoding for recording ${id}`);
           await hlsTranscodingService.transcode(outputFile);
+
+          try {
+            const folderName = recording.playlistName;
+            const folderPath = path.join(SERVER_CONFIG.recordingsDir, folderName);
+            const dbRec = RecordingModel.ensureExists(folderName, folderPath);
+            console.log(`ensured recording in DB: id=${dbRec.id}, folder=${folderName}`);
+          } catch (dbErr) {
+            console.error('failed to ensure recording in database:', dbErr);
+          }
 
           recording.status = 'completed';
             this.saveToDisk();
